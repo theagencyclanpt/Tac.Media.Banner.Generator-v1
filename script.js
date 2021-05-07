@@ -7,7 +7,7 @@ let STATE = {};
 
 const BANNER_MAPED = {
   INSTA: {
-    file: "./resources/insta.png",
+    file: "./resources/banners/insta.png",
     width: 1080,
     height: 1920,
     fontBase: "35pt BebasNeue, Addictive",
@@ -74,7 +74,7 @@ const BANNER_MAPED = {
     ],
   },
   TWITTER: {
-    file: "./resources/twitter.png",
+    file: "./resources/banners/twitter.png",
     width: 1920,
     height: 1080,
     fontBase: "35pt BebasNeue, Addictive",
@@ -121,7 +121,7 @@ const BANNER_MAPED = {
     ],
   },
   TEAM_PRO_INSTA: {
-    file: "./resources/equipa_pro_insta.png",
+    file: "./resources/banners/equipa_pro_insta.png",
     width: 1080,
     height: 1920,
     fontBase: "35pt BebasNeue, Addictive",
@@ -188,7 +188,7 @@ const BANNER_MAPED = {
     ],
   },
   TEAM_PRO_TWITTER: {
-    file: "./resources/equipa_pro_twitter.png",
+    file: "./resources/banners/equipa_pro_twitter.png",
     width: 1920,
     height: 1080,
     fontBase: "35pt BebasNeue, Addictive",
@@ -258,26 +258,29 @@ function drawForm(bannerMapped) {
     label.textContent = input.label;
 
     var inputElement = document.createElement("input");
-    inputElement.classList.add("form-control");
     inputElement.type = input.type;
     inputElement.id = input.id;
 
-    inputElement.addEventListener("change", function (e) {
-      if (input.type == "text") {
+    if (input.type === "text") {
+      inputElement.classList.add("form-control");
+      inputElement.oninput = function (e) {
+        console.log(e.target.value);
         STATE[input.id] = e.target.value;
         drawImage(bannerMapped, STATE);
-      }
+      };
+    }
 
-      if (input.type == "file") {
-        var tempImage = new Image();
+    if (input.type === "file") {
+      inputElement.classList.add("form-control");
+      inputElement.onchange = function (e) {
+        let tempImage = new Image();
         tempImage.src = URL.createObjectURL(e.target.files[0]);
         STATE[input.id] = tempImage;
-
         tempImage.onload = function () {
           drawImage(bannerMapped, STATE);
         };
-      }
-    });
+      };
+    }
 
     master.appendChild(label);
     master.appendChild(inputElement);

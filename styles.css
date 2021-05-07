@@ -157,10 +157,10 @@ body {
 
 @font-face {
   font-family: Addictive;
-  src: url(Addictive_Regular.ttf);
+  src: url(./resources/fonts/Addictive_Regular.ttf);
 }
 
 @font-face {
   font-family: BebasNeue;
-  src: url(BebasNeue_Regular.ttf);
+  src: url(./resources/fonts/BebasNeue_Regular.ttf);
 }
