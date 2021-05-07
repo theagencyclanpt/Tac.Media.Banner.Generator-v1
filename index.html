@@ -18,27 +18,36 @@
                 <img id="preview_image">
             </div>
         </div>
-        <div class="fixed-top d-flex flex-column h-100 justify-content-center align-items-left">
-            <div class="card" style="width: 22rem;">
-                <div id="formBanner" class="card-body">
-                    <div class="form-group">
-                        <label for="exampleInputEmail1">TIPO DO BANNER</label>
-                        <select class="custom-select" id="bannerType" onchange="onBannerTypeSelectChange()">
-                            <option value=""></option>
-                            <option value="insta">Instagram</option>
-                            <option value="twitter">Twitter</option>
-                            <option value="TEAM_PRO_INSTA">Equipa PRO Instagram</option>
-                            <option value="TEAM_PRO_TWITTER">Equipa PRO Twitter</option>
-                        </select>
+        <div class="fixed-top d-flex flex-row h-100 justify-content-between align-items-center">
+            <div>
+                <div class="card" style="width: 22rem;">
+                    <div id="formBanner" class="card-body">
+                        <div id="dynamic_form" class="mb-3"> </div>
                     </div>
-                    <div id="dynamic_form" class="mb-3"> </div>
-                    <div class="form-group d-flex justify-content-center align-items-center">
-                        <button type="button" class="btn btn-success btn-lg"
-                            onclick="download_image()">DOWNLOAD</button>
+                </div>
+            </div>
+            <div>
+                <div class="card" style="width: 22rem;">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">TIPO DO BANNER</label>
+                            <select class="custom-select" id="bannerType" onchange="onBannerTypeSelectChange()">
+                                <option value="insta">Instagram</option>
+                                <option value="twitter">Twitter</option>
+                                <option value="TEAM_PRO_INSTA">Equipa PRO Instagram</option>
+                                <option value="TEAM_PRO_TWITTER">Equipa PRO Twitter</option>
+                            </select>
+                        </div>
+                        <div id="dynamic_form_options" class="mb-3"> </div>
+                        <div class="form-group d-flex justify-content-center align-items-center">
+                            <button type="button" class="btn btn-success btn-lg"
+                                onclick="download_image()">DOWNLOAD</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="fixed-bottom">
             <h6>RC001-127</h6>
         </div>

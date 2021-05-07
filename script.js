@@ -2,12 +2,17 @@ const BANNER_TYPE_REF = document.getElementById("bannerType");
 const IMAGE_PREVIEW_REF = document.getElementById("preview_image");
 const CANVAS_REF = document.getElementById("preview_canvas");
 const FORM_BANNER_REF = document.getElementById("dynamic_form");
+const FORM_OPTIONS_REF = document.getElementById("dynamic_form_options");
+let bannerMapped = null;
 
-let STATE = {};
+let STATE = {
+  HAS_STREAM: false,
+  OVERRIDE: {},
+};
 
 const BANNER_MAPED = {
   INSTA: {
-    file: "./resources/banners/insta.png",
+    file: "./resources/banners/insta.normal.png",
     width: 1080,
     height: 1920,
     fontBase: "35pt BebasNeue, Addictive",
@@ -15,6 +20,13 @@ const BANNER_MAPED = {
       width: 450,
       height: 800,
     },
+    options: [
+      {
+        label: "Tem stream?",
+        templateOverride: "./resources/banners/insta.twitch.png",
+        id: "HAS_STREAM",
+      },
+    ],
     inputs: [
       {
         type: "text",
@@ -45,6 +57,7 @@ const BANNER_MAPED = {
         color: "white",
         font: "45pt BebasNeue",
         textAlign: "center",
+        dependency: "HAS_STREAM",
       },
       {
         type: "file",
@@ -66,10 +79,11 @@ const BANNER_MAPED = {
       },
       {
         type: "file",
-        label: "CAMPEONATO LOGO",
+        label: "CAMPEONATO LOGO (height 100px)",
         id: "insta-camp",
         x: 830,
         y: 450,
+        "max-height": 100,
       },
     ],
   },
@@ -113,18 +127,26 @@ const BANNER_MAPED = {
       },
       {
         type: "file",
-        label: "CAMPEONATO LOGO",
+        label: "CAMPEONATO LOGO (height 100px)",
         id: "twitter-camp",
         x: 1310,
         y: 150,
+        "max-height": 100,
       },
     ],
   },
   TEAM_PRO_INSTA: {
-    file: "./resources/banners/equipa_pro_insta.png",
+    file: "./resources/banners/team.pro.insta.normal.png",
     width: 1080,
     height: 1920,
     fontBase: "35pt BebasNeue, Addictive",
+    options: [
+      {
+        label: "Tem stream?",
+        templateOverride: "./resources/banners/team.pro.insta.twitch.png",
+        id: "HAS_STREAM",
+      },
+    ],
     preview: {
       width: 450,
       height: 800,
@@ -159,6 +181,7 @@ const BANNER_MAPED = {
         color: "white",
         font: "45pt BebasNeue",
         textAlign: "center",
+        dependency: "HAS_STREAM",
       },
       {
         type: "file",
@@ -180,15 +203,16 @@ const BANNER_MAPED = {
       },
       {
         type: "file",
-        label: "CAMPEONATO LOGO",
+        label: "CAMPEONATO LOGO (height 100px)",
         id: "TEAM_PRO_INSTA-camp",
         x: 843,
         y: 95,
+        "max-height": 100,
       },
     ],
   },
   TEAM_PRO_TWITTER: {
-    file: "./resources/banners/equipa_pro_twitter.png",
+    file: "./resources/banners/team.pro.twitter.normal.png",
     width: 1920,
     height: 1080,
     fontBase: "35pt BebasNeue, Addictive",
@@ -227,30 +251,35 @@ const BANNER_MAPED = {
       },
       {
         type: "file",
-        label: "CAMPEONATO LOGO",
+        label: "CAMPEONATO LOGO (height 100px)",
         id: "TEAM_PRO_TWITTER-camp",
         x: 1680,
         y: 180,
+        "max-height": 100,
       },
     ],
   },
 };
 
 function onBannerTypeSelectChange(e) {
-  let bannerMapped = BANNER_MAPED[BANNER_TYPE_REF.value.toUpperCase()];
-  FORM_BANNER_REF.textContent = "";
+  bannerMapped = BANNER_MAPED[BANNER_TYPE_REF.value.toUpperCase()];
+  FORM_OPTIONS_REF.textContent = "";
+  STATE = { HAS_STREAM: false, OVERRIDE: {} };
   if (bannerMapped) {
-    drawImage(bannerMapped, null);
-    drawForm(bannerMapped);
+    drawImage(null);
+    drawForm();
   }
 }
 
-function drawForm(bannerMapped) {
-  if (!bannerMapped || !bannerMapped.inputs) {
-    alert("Invalid Banner mapped");
-  }
-
+function renderDynamicFormInputs() {
+  FORM_BANNER_REF.textContent = "";
   bannerMapped.inputs.forEach((input) => {
+    console.log("RENDERING INPUT FORM -> " + input.label);
+
+    if (input.dependency && !STATE[input.dependency]) {
+      return;
+    }
+
     var master = document.createElement("div");
     master.classList.add("form-group");
 
@@ -263,10 +292,10 @@ function drawForm(bannerMapped) {
 
     if (input.type === "text") {
       inputElement.classList.add("form-control");
+      inputElement.value = STATE[input.id] ? STATE[input.id] : "";
       inputElement.oninput = function (e) {
-        console.log(e.target.value);
         STATE[input.id] = e.target.value;
-        drawImage(bannerMapped, STATE);
+        drawImage(STATE);
       };
     }
 
@@ -275,9 +304,15 @@ function drawForm(bannerMapped) {
       inputElement.onchange = function (e) {
         let tempImage = new Image();
         tempImage.src = URL.createObjectURL(e.target.files[0]);
-        STATE[input.id] = tempImage;
         tempImage.onload = function () {
-          drawImage(bannerMapped, STATE);
+          if (input["max-height"] && tempImage.height > input["max-height"]) {
+            alert("A imagem do campeonato só deve ter 100px de altura");
+            inputElement.value = "";
+            return;
+          }
+
+          STATE[input.id] = tempImage;
+          drawImage(STATE);
         };
       };
     }
@@ -289,48 +324,97 @@ function drawForm(bannerMapped) {
   });
 }
 
-function previewImg(banner) {
-  IMAGE_PREVIEW_REF.src = CANVAS_REF.toDataURL();
-  IMAGE_PREVIEW_REF.width = banner.preview.width;
-  IMAGE_PREVIEW_REF.height = banner.preview.height;
+function drawForm() {
+  if (!bannerMapped || !bannerMapped.inputs) {
+    alert("Invalid bannerMapped mapped");
+  }
+
+  renderDynamicFormInputs();
+
+  bannerMapped.options.forEach((option) => {
+    var master = document.createElement("div");
+    master.classList.add("form-group");
+
+    var label = document.createElement("label");
+    label.textContent = option.label;
+
+    var inputElement = document.createElement("input");
+    inputElement.type = "checkbox";
+    inputElement.id = option.id;
+
+    inputElement.onchange = function (e) {
+      if (inputElement.checked) {
+        STATE[option.id] = true;
+        STATE.OVERRIDE["bannerUrl"] = option.templateOverride;
+        drawImage(STATE);
+      } else {
+        STATE[option.id] = false;
+        STATE.OVERRIDE["bannerUrl"] = null;
+        drawImage(STATE);
+      }
+
+      renderDynamicFormInputs();
+    };
+
+    master.appendChild(label);
+    master.appendChild(inputElement);
+
+    FORM_OPTIONS_REF.appendChild(master);
+  });
 }
 
-function drawImage(banner, information) {
-  CANVAS_REF.width = banner.width;
-  CANVAS_REF.height = banner.height;
+function previewImg() {
+  IMAGE_PREVIEW_REF.src = CANVAS_REF.toDataURL();
+  IMAGE_PREVIEW_REF.width = bannerMapped.preview.width;
+  IMAGE_PREVIEW_REF.height = bannerMapped.preview.height;
+}
+
+function drawImage() {
+  CANVAS_REF.width = bannerMapped.width;
+  CANVAS_REF.height = bannerMapped.height;
+
   var context = CANVAS_REF.getContext("2d");
   var imageObj = new Image();
-  imageObj.src = banner.file;
+
+  if (STATE.OVERRIDE["bannerUrl"]) {
+    imageObj.src = STATE.OVERRIDE["bannerUrl"];
+  } else {
+    imageObj.src = bannerMapped.file;
+  }
 
   imageObj.onload = function () {
     context.drawImage(imageObj, 0, 0);
-    context.font = banner.fontBase;
+    context.font = bannerMapped.fontBase;
 
-    if (information !== null) {
-      banner.inputs.forEach((input) => {
-        if (input.type === "text" && information[input.id]) {
+    if (STATE !== null) {
+      bannerMapped.inputs.forEach((input) => {
+        if (input.type === "text" && STATE[input.id]) {
+          if (input.dependency && !STATE[input.dependency]) {
+            return;
+          }
+
           context.font = input.font;
           context.fillStyle = input.color;
           context.textAlign = input.textAlign;
-          context.fillText(information[input.id], input.x, input.y);
+          context.fillText(STATE[input.id], input.x, input.y);
         }
 
-        if (input.type === "file" && information[input.id]) {
+        if (input.type === "file" && STATE[input.id]) {
           if (input.width && input.height) {
             context.drawImage(
-              information[input.id],
+              STATE[input.id],
               input.x,
               input.y,
               input.width,
               input.height
             );
           } else {
-            context.drawImage(information[input.id], input.x, input.y);
+            context.drawImage(STATE[input.id], input.x, input.y);
           }
         }
       });
     }
-    previewImg(banner);
+    previewImg();
   };
 }
 
@@ -344,3 +428,5 @@ function download_image() {
   link.href = image;
   link.click();
 }
+
+onBannerTypeSelectChange({ value: "INSTA" });
