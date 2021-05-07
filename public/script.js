@@ -12,7 +12,7 @@ let STATE = {
 
 const BANNER_MAPED = {
   INSTA: {
-    file: "./resources/banners/insta.normal.png",
+    file: "./static/resources/banners/insta.normal.png",
     width: 1080,
     height: 1920,
     fontBase: "35pt BebasNeue, Addictive",
@@ -23,7 +23,7 @@ const BANNER_MAPED = {
     options: [
       {
         label: "Tem stream?",
-        templateOverride: "./resources/banners/insta.twitch.png",
+        templateOverride: "./static/resources/banners/insta.twitch.png",
         id: "HAS_STREAM",
       },
     ],
@@ -88,7 +88,7 @@ const BANNER_MAPED = {
     ],
   },
   TWITTER: {
-    file: "./resources/banners/twitter.png",
+    file: "./static/resources/banners/twitter.png",
     width: 1920,
     height: 1080,
     fontBase: "35pt BebasNeue, Addictive",
@@ -136,14 +136,15 @@ const BANNER_MAPED = {
     ],
   },
   TEAM_PRO_INSTA: {
-    file: "./resources/banners/team.pro.insta.normal.png",
+    file: "./static/resources/banners/team.pro.insta.normal.png",
     width: 1080,
     height: 1920,
     fontBase: "35pt BebasNeue, Addictive",
     options: [
       {
         label: "Tem stream?",
-        templateOverride: "./resources/banners/team.pro.insta.twitch.png",
+        templateOverride:
+          "./static/resources/banners/team.pro.insta.twitch.png",
         id: "HAS_STREAM",
       },
     ],
@@ -212,7 +213,7 @@ const BANNER_MAPED = {
     ],
   },
   TEAM_PRO_TWITTER: {
-    file: "./resources/banners/team.pro.twitter.normal.png",
+    file: "./static/resources/banners/team.pro.twitter.normal.png",
     width: 1920,
     height: 1080,
     fontBase: "35pt BebasNeue, Addictive",
@@ -419,14 +420,23 @@ function drawImage() {
 }
 
 function download_image() {
-  image = CANVAS_REF.toDataURL("image/png").replace(
-    "image/png",
-    "image/octet-stream"
-  );
+  let image = CANVAS_REF.toDataURL("image/jpeg", 1);
+
   var link = document.createElement("a");
-  link.download = "BANNER_AGENCY.png";
+  link.download = "BANNER_AGENCY.jpeg";
   link.href = image;
+
   link.click();
+}
+
+function publish_insta() {
+  let image64 = CANVAS_REF.toDataURL("image/jpeg", 1);
+
+  fetch("/publish-insta", {
+    method: "POST",
+    headers: { "Content-type": "application/json;charset=UTF-8" },
+    body: JSON.stringify({ image: image64 }),
+  }).then((response) => response.json());
 }
 
 onBannerTypeSelectChange({ value: "INSTA" });
