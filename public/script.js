@@ -20,14 +20,33 @@ function onBannerTypeSelectChange(e) {
   }
 }
 
+function isValidInputDependency(input) {
+  let isValid = false;
+  if (input.dependency) {
+    let allPropsFromState = Object.getOwnPropertyNames(STATE).sort();
+    allPropsFromState.forEach((propName) => {
+      if (input.dependency.hasOwnProperty(propName)) {
+        if (input.dependency[propName] === STATE[propName]) {
+          isValid = true;
+        } else {
+          isValid = false;
+        }
+      }
+    });
+  } else {
+    isValid = true;
+  }
+
+  return isValid;
+}
+
 function renderDynamicFormInputs() {
   FORM_BANNER_REF.textContent = "";
   bannerMapped.inputs.forEach((input) => {
-    console.log("RENDERING INPUT FORM -> " + input.label);
-
-    if (input.dependency && !STATE[input.dependency]) {
+    if (!isValidInputDependency(input)) {
       return;
     }
+    console.log("RENDERING INPUT FORM -> " + input.label);
 
     var master = document.createElement("div");
     master.classList.add("form-group");
@@ -41,9 +60,16 @@ function renderDynamicFormInputs() {
 
     if (input.type === "text") {
       inputElement.classList.add("form-control");
+
+      if (!STATE[input.id] && input.defaultValue) {
+        STATE[input.id] = input.defaultValue;
+      }
+
       inputElement.value = STATE[input.id] ? STATE[input.id] : "";
+
       inputElement.oninput = function (e) {
         STATE[input.id] = e.target.value;
+        console.log(STATE);
         drawImage(STATE);
       };
     }
@@ -87,23 +113,26 @@ function drawForm() {
     var label = document.createElement("label");
     label.textContent = option.label;
 
-    var inputElement = document.createElement("input");
-    inputElement.type = "checkbox";
-    inputElement.id = option.id;
+    if (option.type === "checkbox") {
+      var inputElement = document.createElement("input");
+      inputElement.type = option.type;
+      inputElement.id = option.id;
+      inputElement.onchange = function (e) {
+        if (inputElement.checked) {
+          STATE[option.id] = true;
+          if (option.templateOverride) {
+            STATE.OVERRIDE["bannerUrl"] = option.templateOverride;
+          }
+          drawImage(STATE);
+        } else {
+          STATE[option.id] = false;
+          STATE.OVERRIDE["bannerUrl"] = null;
+          drawImage(STATE);
+        }
 
-    inputElement.onchange = function (e) {
-      if (inputElement.checked) {
-        STATE[option.id] = true;
-        STATE.OVERRIDE["bannerUrl"] = option.templateOverride;
-        drawImage(STATE);
-      } else {
-        STATE[option.id] = false;
-        STATE.OVERRIDE["bannerUrl"] = null;
-        drawImage(STATE);
-      }
-
-      renderDynamicFormInputs();
-    };
+        renderDynamicFormInputs();
+      };
+    }
 
     master.appendChild(label);
     master.appendChild(inputElement);
@@ -138,8 +167,18 @@ function drawImage() {
     if (STATE !== null) {
       bannerMapped.inputs.forEach((input) => {
         if (input.type === "text" && STATE[input.id]) {
-          if (input.dependency && !STATE[input.dependency]) {
+          if (!isValidInputDependency(input)) {
             return;
+          }
+
+          if (input.shape) {
+            context.fillStyle = input.shape.color;
+            context.fillRect(
+              input.shape.x,
+              input.shape.y,
+              input.shape.width,
+              input.shape.height
+            );
           }
 
           context.font = input.font;
@@ -162,8 +201,36 @@ function drawImage() {
           }
         }
       });
+
+      if (bannerMapped.statics) {
+        bannerMapped.statics.forEach((static) => {
+          if (static.type === "text") {
+            if (!isValidInputDependency(static)) {
+              return;
+            }
+
+            context.font = static.font;
+            context.fillStyle = static.color;
+            context.textAlign = static.textAlign;
+            context.fillText(static.value, static.x, static.y);
+          }
+        });
+      }
     }
-    previewImg();
+
+    if (bannerMapped.overlay) {
+      var imageObjOverlay = new Image();
+      imageObjOverlay.src = bannerMapped.overlay;
+      console.log("@DRAW_OVERLYA - STEP 1");
+
+      imageObjOverlay.onload = function () {
+        console.log("@DRAW_OVERLYA - STEP 2");
+        context.drawImage(imageObjOverlay, 0, 0);
+        previewImg();
+      };
+    } else {
+      previewImg();
+    }
   };
 }
 
@@ -187,4 +254,4 @@ function publish_insta() {
   }).then((response) => response.json());
 }
 
-onBannerTypeSelectChange({ value: "INSTA" });
+onBannerTypeSelectChange({ value: "RESULT_INSTA" });

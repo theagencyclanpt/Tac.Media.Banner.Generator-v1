@@ -18,10 +18,10 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname + "/index.html"));
 });
 
-// (async () => {
-//   ig.state.generateDevice(process.env.INSTA_USER);
-//   await ig.account.login(rocess.env.INSTA_USER, rocess.env.camelo123);
-// })();
+(async () => {
+  ig.state.generateDevice(process.env.INSTA_USER);
+  await ig.account.login(process.env.INSTA_USER, process.env.INSTA_PWD);
+})();
 
 async function publishOnInsta() {
   await ig.publish.story({

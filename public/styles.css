@@ -164,3 +164,13 @@ body {
   font-family: BebasNeue;
   src: url(./resources/fonts/BebasNeue_Regular.ttf);
 }
+
+@font-face {
+  font-family: MicroExtendFLF;
+  src: url(./resources/fonts/MicroExtendFLF_Bold.ttf);
+}
+
+@font-face {
+  font-family: RussoOne;
+  src: url(./resources/fonts/Russo_One.ttf);
+}
