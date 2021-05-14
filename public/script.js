@@ -36,7 +36,7 @@ async function onBannerTypeSelectChange(e) {
     });
 }
 
-function isValidInputDependency(input) {
+function isValidDependency(input) {
   let isValid = false;
   if (input.dependency) {
     let allPropsFromState = Object.getOwnPropertyNames(STATE).sort();
@@ -59,7 +59,7 @@ function isValidInputDependency(input) {
 function renderDynamicFormInputs() {
   FORM_BANNER_REF.textContent = "";
   bannerMapped.inputs.forEach((input) => {
-    if (!isValidInputDependency(input)) {
+    if (!isValidDependency(input)) {
       return;
     }
     console.log("RENDERING INPUT FORM -> " + input.label);
@@ -86,6 +86,23 @@ function renderDynamicFormInputs() {
 
       inputElement.oninput = function (e) {
         STATE[input.id] = e.target.value;
+        drawImageWithTimeout();
+      };
+    }
+
+    if (input.type === "time") {
+      inputElement.classList.add("form-control");
+
+      if (!STATE[input.id] && input.defaultValue) {
+        STATE[input.id] = input.defaultValue;
+      }
+
+      inputElement.value = STATE[input.id] ? STATE[input.id] : "";
+
+      inputElement.oninput = function (e) {
+        let temp = e.target.value;
+        temp = temp.replace(":", "H");
+        STATE[input.id] = temp;
         drawImageWithTimeout();
       };
     }
@@ -133,8 +150,14 @@ function drawForm() {
 
       if (option.type === "checkbox") {
         var inputElement = document.createElement("input");
+        master.classList.remove("form-group");
+        master.classList.add("form-switch");
+        master.classList.add("form-check");
+        label.classList.add("form-check-label");
         inputElement.type = option.type;
         inputElement.id = option.id;
+        inputElement.classList.add("form-check-input");
+
         inputElement.onchange = function (e) {
           if (inputElement.checked) {
             STATE[option.id] = true;
@@ -152,8 +175,8 @@ function drawForm() {
         };
       }
 
-      master.appendChild(label);
       master.appendChild(inputElement);
+      master.appendChild(label);
 
       FORM_OPTIONS_REF.appendChild(master);
     });
@@ -185,8 +208,11 @@ function drawImage() {
 
     if (STATE !== null) {
       bannerMapped.inputs.forEach((input) => {
-        if (input.type === "text" && STATE[input.id]) {
-          if (!isValidInputDependency(input)) {
+        if (
+          (input.type === "text" || input.type === "time") &&
+          STATE[input.id]
+        ) {
+          if (!isValidDependency(input)) {
             return;
           }
 
@@ -224,7 +250,7 @@ function drawImage() {
       if (bannerMapped.statics) {
         bannerMapped.statics.forEach((static) => {
           if (static.type === "text") {
-            if (!isValidInputDependency(static)) {
+            if (!isValidDependency(static)) {
               return;
             }
 

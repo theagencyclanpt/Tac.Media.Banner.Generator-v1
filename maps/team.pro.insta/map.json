@@ -28,7 +28,7 @@
       "textAlign": "right"
     },
     {
-      "type": "text",
+      "type": "time",
       "label": "HORA",
       "id": "TEAM_PRO_INSTA-hora",
       "x": 740,

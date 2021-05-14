@@ -28,7 +28,7 @@
       "textAlign": "right"
     },
     {
-      "type": "text",
+      "type": "time",
       "label": "HORA",
       "id": "insta-hora",
       "x": 425,
