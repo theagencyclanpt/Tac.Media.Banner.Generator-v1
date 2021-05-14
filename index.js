@@ -1,47 +1,56 @@
-const { IgApiClient } = require("instagram-private-api");
-const express = require("express");
 require("dotenv").config();
+const express = require("express");
 const path = require("path");
 const app = express();
 const port = 3001;
-const { readFile } = require("fs");
-const ig = new IgApiClient();
-const { promisify } = require("util");
-const readFileAsync = promisify(readFile);
-const fs = require("fs");
+const { readFile, readdirSync } = require("fs");
+const util = require("util");
+const readFileAsycn = util.promisify(readFile);
+
+const mapsDirectory = path.join(__dirname, "maps");
+
+const getDirectories = (source) =>
+  readdirSync(source, { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => dirent.name);
 
 app.use("/static", express.static("public"));
+app.use("/maps", express.static("maps"));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb" }));
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname + "/index.html"));
+  res.sendFile(path.join(__dirname, "/index.html"));
 });
 
-(async () => {
-  ig.state.generateDevice(process.env.INSTA_USER);
-  await ig.account.login(process.env.INSTA_USER, process.env.INSTA_PWD);
-})();
+app.get("/map/:mapName", async (req, res) => {
+  let dir = req.params.mapName;
+  let data = JSON.parse(
+    await readFileAsycn(path.join(mapsDirectory, dir, "map.json"))
+  );
 
-async function publishOnInsta() {
-  await ig.publish.story({
-    file: await readFileAsync(path.resolve(__dirname, "temp", "1.jpeg")),
-  });
-}
+  data["file"] = "./maps/" + dir + "/background.png";
+  console.log(data);
+  res.json(data);
+});
 
-app.post("/publish-insta", async (req, res) => {
-  var imgData = req.body.image;
-  var base64Data = imgData.split(",")[1];
-  fs.writeFile("./temp/1.jpeg", base64Data, "base64", async function () {
-    try {
-      await publishOnInsta();
-      fs.unlinkSync("./temp/1.jpeg");
-    } catch (error) {
-      console.log(error);
-    }
-  });
+app.get("/options", async (req, res) => {
+  let directorys = getDirectories(mapsDirectory);
 
-  res.sendStatus(200);
+  let result = [];
+
+  for (var element of directorys) {
+    let data = JSON.parse(
+      await readFileAsycn(path.join(mapsDirectory, element, "map.json"))
+    );
+
+    result.push({
+      value: element,
+      title: data["title"],
+    });
+  }
+
+  res.json(result);
 });
 
 app.listen(port, () => {

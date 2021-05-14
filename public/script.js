@@ -10,14 +10,21 @@ let STATE = {
   OVERRIDE: {},
 };
 
-function onBannerTypeSelectChange(e) {
-  bannerMapped = BANNER_MAPED[BANNER_TYPE_REF.value.toUpperCase()];
-  FORM_OPTIONS_REF.textContent = "";
-  STATE = { HAS_STREAM: false, OVERRIDE: {} };
-  if (bannerMapped) {
-    drawImage(null);
-    drawForm();
-  }
+async function onBannerTypeSelectChange(e) {
+  fetch("/map/" + BANNER_TYPE_REF.value.toLowerCase(), {
+    method: "GET",
+    headers: { "Content-type": "application/json;charset=UTF-8" },
+  })
+    .then((response) => response.json())
+    .then((r) => {
+      bannerMapped = r;
+      FORM_OPTIONS_REF.textContent = "";
+      STATE = { HAS_STREAM: false, OVERRIDE: {} };
+      if (bannerMapped) {
+        drawImage(null);
+        drawForm();
+      }
+    });
 }
 
 function isValidInputDependency(input) {
@@ -254,4 +261,18 @@ function publish_insta() {
   }).then((response) => response.json());
 }
 
-onBannerTypeSelectChange({ value: "RESULT_INSTA" });
+fetch("/options", {
+  method: "GET",
+  headers: { "Content-type": "application/json;charset=UTF-8" },
+})
+  .then((response) => response.json())
+  .then((r) => {
+    r.forEach((element) => {
+      var option = document.createElement("option");
+      option.text = element.title;
+      option.value = element.value;
+      BANNER_TYPE_REF.add(option, BANNER_TYPE_REF[0]);
+    });
+
+    onBannerTypeSelectChange();
+  });
