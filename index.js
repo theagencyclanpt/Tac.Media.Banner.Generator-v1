@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/calendar", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "calendar.html"));
+  res.sendFile(path.join(__dirname, "public", "calendar", "index.html"));
 });
 
 app.get("/map/:mapName", async (req, res) => {
