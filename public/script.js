@@ -10,6 +10,15 @@ let STATE = {
   OVERRIDE: {},
 };
 
+let drawImageWithTimeoutTime = null;
+
+function drawImageWithTimeout() {
+  clearTimeout(drawImageWithTimeoutTime);
+  drawImageWithTimeoutTime = setTimeout(function () {
+    drawImage();
+  }, 100);
+}
+
 async function onBannerTypeSelectChange(e) {
   fetch("/map/" + BANNER_TYPE_REF.value.toLowerCase(), {
     method: "GET",
@@ -57,6 +66,7 @@ function renderDynamicFormInputs() {
 
     var master = document.createElement("div");
     master.classList.add("form-group");
+    master.classList.add("mt-2");
 
     var label = document.createElement("label");
     label.textContent = input.label;
@@ -76,8 +86,7 @@ function renderDynamicFormInputs() {
 
       inputElement.oninput = function (e) {
         STATE[input.id] = e.target.value;
-        console.log(STATE);
-        drawImage(STATE);
+        drawImageWithTimeout();
       };
     }
 
@@ -94,7 +103,7 @@ function renderDynamicFormInputs() {
           }
 
           STATE[input.id] = tempImage;
-          drawImage(STATE);
+          drawImageWithTimeout();
         };
       };
     }
@@ -113,39 +122,42 @@ function drawForm() {
 
   renderDynamicFormInputs();
 
-  bannerMapped.options.forEach((option) => {
-    var master = document.createElement("div");
-    master.classList.add("form-group");
+  if (bannerMapped.options) {
+    bannerMapped.options.forEach((option) => {
+      var master = document.createElement("div");
+      master.classList.add("form-group");
+      master.classList.add("mt-2");
 
-    var label = document.createElement("label");
-    label.textContent = option.label;
+      var label = document.createElement("label");
+      label.textContent = option.label;
 
-    if (option.type === "checkbox") {
-      var inputElement = document.createElement("input");
-      inputElement.type = option.type;
-      inputElement.id = option.id;
-      inputElement.onchange = function (e) {
-        if (inputElement.checked) {
-          STATE[option.id] = true;
-          if (option.templateOverride) {
-            STATE.OVERRIDE["bannerUrl"] = option.templateOverride;
+      if (option.type === "checkbox") {
+        var inputElement = document.createElement("input");
+        inputElement.type = option.type;
+        inputElement.id = option.id;
+        inputElement.onchange = function (e) {
+          if (inputElement.checked) {
+            STATE[option.id] = true;
+            if (option.templateOverride) {
+              STATE.OVERRIDE["bannerUrl"] = option.templateOverride;
+            }
+            drawImageWithTimeout();
+          } else {
+            STATE[option.id] = false;
+            STATE.OVERRIDE["bannerUrl"] = null;
+            drawImageWithTimeout();
           }
-          drawImage(STATE);
-        } else {
-          STATE[option.id] = false;
-          STATE.OVERRIDE["bannerUrl"] = null;
-          drawImage(STATE);
-        }
 
-        renderDynamicFormInputs();
-      };
-    }
+          renderDynamicFormInputs();
+        };
+      }
 
-    master.appendChild(label);
-    master.appendChild(inputElement);
+      master.appendChild(label);
+      master.appendChild(inputElement);
 
-    FORM_OPTIONS_REF.appendChild(master);
-  });
+      FORM_OPTIONS_REF.appendChild(master);
+    });
+  }
 }
 
 function previewImg() {
@@ -228,10 +240,8 @@ function drawImage() {
     if (bannerMapped.overlay) {
       var imageObjOverlay = new Image();
       imageObjOverlay.src = bannerMapped.overlay;
-      console.log("@DRAW_OVERLYA - STEP 1");
 
       imageObjOverlay.onload = function () {
-        console.log("@DRAW_OVERLYA - STEP 2");
         context.drawImage(imageObjOverlay, 0, 0);
         previewImg();
       };

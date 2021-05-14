@@ -16,11 +16,16 @@ const getDirectories = (source) =>
 
 app.use("/static", express.static("public"));
 app.use("/maps", express.static("maps"));
+app.use("/scripts", express.static("node_modules"));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb" }));
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "/index.html"));
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/calendar", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "calendar.html"));
 });
 
 app.get("/map/:mapName", async (req, res) => {

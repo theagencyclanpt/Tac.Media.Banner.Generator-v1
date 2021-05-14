@@ -174,3 +174,12 @@ body {
   font-family: RussoOne;
   src: url(./resources/fonts/Russo_One.ttf);
 }
+
+main {
+  display: flex;
+  flex-wrap: nowrap;
+  height: 100vh;
+  height: -webkit-fill-available;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
