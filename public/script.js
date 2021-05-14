@@ -66,12 +66,14 @@ function renderDynamicFormInputs() {
 
     var master = document.createElement("div");
     master.classList.add("form-group");
-    master.classList.add("mt-2");
+    master.classList.add("w-100");
+    master.classList.add("mb-2");
 
     var label = document.createElement("label");
     label.textContent = input.label;
 
     var inputElement = document.createElement("input");
+    inputElement.classList.add("w-100");
     inputElement.type = input.type;
     inputElement.id = input.id;
 
@@ -143,6 +145,7 @@ function drawForm() {
     bannerMapped.options.forEach((option) => {
       var master = document.createElement("div");
       master.classList.add("form-group");
+      master.classList.add("w-100");
       master.classList.add("mt-2");
 
       var label = document.createElement("label");
