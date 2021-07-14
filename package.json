@@ -1,6 +1,7 @@
 {
   "name": "banner-generater",
   "license": "MIT",
+  "version": "1.0.0-dev002",
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src"
