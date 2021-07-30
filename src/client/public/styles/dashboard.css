@@ -1,0 +1,33 @@
+main {
+  display: flex;
+  flex-wrap: nowrap;
+  height: 100vh;
+  height: -webkit-fill-available;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.tac-add {
+  width: 210px;
+  height: 250px;
+  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 10px;
+  margin-right: 10px;
+  transition: 0.2s ease-in-out;
+}
+
+.tac-add:hover {
+  transform: scale(1.02); /*100%*/
+}
+
+.tac-pedding {
+  width: 100%;
+  height: 250px;
+  background-color: red;
+  margin-bottom: 10px;
+  min-height: 250px;
+}

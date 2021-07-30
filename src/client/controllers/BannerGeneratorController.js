@@ -1,25 +1,20 @@
+const Router = require("express").Router();
 const Path = require("path");
 const { readFile, readdirSync } = require("fs");
 const Util = require("util");
 const ReadFileAsycn = Util.promisify(readFile);
 
-class HomeController {
-  constructor(provider) {
-    if (!provider)
-      throw new Error(
-        "Argument provider is missing on HomeController constructor."
-      );
-
-    this.Provider = provider;
+class BannerGeneratorController {
+  constructor() {
     this.MapMappeds = Path.join(__dirname, "..", "public", "maps");
   }
 
   Mount() {
-    this.Provider.get("/", (request, response) => {
-      response.render("index", { user: "12111111111" });
+    Router.get("/", (request, response) => {
+      response.render("banner-generator");
     });
 
-    this.Provider.get("/options", async (req, res) => {
+    Router.get("/options", async (req, res) => {
       let directorys = readdirSync(this.MapMappeds, { withFileTypes: true })
         .filter((dirent) => dirent.isDirectory())
         .map((dirent) => dirent.name);
@@ -40,7 +35,7 @@ class HomeController {
       res.json(result);
     });
 
-    this.Provider.get("/map/:mapName", async (req, res) => {
+    Router.get("/map/:mapName", async (req, res) => {
       let dir = req.params.mapName;
       let data = JSON.parse(
         await ReadFileAsycn(Path.join(this.MapMappeds, dir, "map.json"))
@@ -50,7 +45,9 @@ class HomeController {
       console.log(data);
       res.json(data);
     });
+
+    return Router;
   }
 }
 
-module.exports = HomeController;
+module.exports = BannerGeneratorController;

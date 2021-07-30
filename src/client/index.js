@@ -1,5 +1,6 @@
 const Path = require("path");
-const HomeController = require("./controllers/HomeController");
+const BannerGeneratorController = require("./controllers/BannerGeneratorController");
+const DashboardController = require("./controllers/DashboardController");
 
 class Client {
   constructor(provider) {
@@ -9,7 +10,8 @@ class Client {
     this.Provider = provider();
     this.PublicDir = provider.static(Path.join(__dirname, "public"));
     this.ViewPath = Path.join(__dirname, "views");
-    this.HomeController = new HomeController(this.Provider);
+    this.BannerGeneratorController = new BannerGeneratorController();
+    this.DashboardController = new DashboardController();
     this.Mount();
   }
 
@@ -22,7 +24,8 @@ class Client {
 
     this.Provider.use("/public", this.PublicDir);
 
-    this.HomeController.Mount();
+    this.Provider.use("/", this.BannerGeneratorController.Mount());
+    this.Provider.use("/dashboard", this.DashboardController.Mount());
 
     this.Provider.on("mount", function (parent) {
       console.log("Client Mounted");
