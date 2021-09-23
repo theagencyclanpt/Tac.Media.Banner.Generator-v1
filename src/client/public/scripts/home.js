@@ -38,10 +38,11 @@ async function onBannerTypeSelectChange(e) {
 function isValidDependency(input) {
   let isValid = false;
   if (input.dependency) {
+    console.log(input);
     let allPropsFromState = Object.getOwnPropertyNames(STATE).sort();
     allPropsFromState.forEach((propName) => {
       if (input.dependency.hasOwnProperty(propName)) {
-        if (input.dependency[propName] === STATE[propName]) {
+        if (input.dependency[propName] == STATE[propName]) {
           isValid = true;
         } else {
           isValid = false;
@@ -175,10 +176,30 @@ function drawForm() {
 
           renderDynamicFormInputs();
         };
+      } else if (option.type === "combobox") {
+        var inputElement = document.createElement("select");
+        inputElement.classList.add("form-select");
+        inputElement.classList.add("w-100");
+
+        option.options.forEach(op => {
+          var option = document.createElement("option");
+          option.text = op.label;
+          option.value = op.value;
+
+          inputElement.add(option, inputElement[0]);
+        });
+
+        inputElement.onchange = function (e) {
+          STATE[option.id] = inputElement.value;
+          drawImageWithTimeout();
+          renderDynamicFormInputs();
+        };
+
+        inputElement.selectedIndex = -1;
       }
 
-      master.appendChild(inputElement);
       master.appendChild(label);
+      master.appendChild(inputElement);
 
       FORM_OPTIONS_REF.appendChild(master);
     });
